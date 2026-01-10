@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from backend.routers import todos
+from routers import todos
 
 app = FastAPI(title="Backend API")
 

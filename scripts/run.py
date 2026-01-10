@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent.parent
-FRONTEND_MAIN = ROOT_DIR / "frontend" / "src" / "frontend" / "main.py"
+FRONTEND_MAIN = ROOT_DIR / "frontend" / "src" / "main.py"
 
 
 def dev_frontend():
@@ -19,16 +19,26 @@ def dev_frontend_desktop():
 def dev_backend():
     """バックエンド開発サーバー"""
     subprocess.run(
-        ["uvicorn", "backend.main:app", "--reload", "--port", "8000"],
-        cwd=ROOT_DIR,
+        ["uvicorn", "src.main:app", "--reload", "--port", "8000"],
+        cwd=ROOT_DIR / "backend",
     )
 
 
 def build_frontend():
     """フロントエンドビルド（CSR静的ファイル生成）"""
+    import os
+    frontend_src_dir = ROOT_DIR / "frontend" / "src"
     output_dir = ROOT_DIR / "frontend" / "dist"
+    
+    # Flutter pathを一時的に追加
+    env = os.environ.copy()
+    flutter_bin = "/Users/ibarakikeita/flutter/3.38.5/bin"
+    env["PATH"] = f"{flutter_bin}:{env.get('PATH', '')}"
+    
     subprocess.run(
-        ["flet", "build", "web", str(FRONTEND_MAIN), "--output", str(output_dir)]
+        ["flet", "build", "web", "main.py", "--output", str(output_dir)],
+        cwd=frontend_src_dir,
+        env=env,
     )
     print(f"ビルド完了: {output_dir}")
 

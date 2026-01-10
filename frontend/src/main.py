@@ -1,6 +1,5 @@
 import flet as ft
-
-from frontend.services.api_client import ApiClient
+from services.api_client import ApiClient
 
 
 async def main(page: ft.Page):
