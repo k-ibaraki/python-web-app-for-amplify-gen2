@@ -1,3 +1,3 @@
-from shared.schemas import ItemCreate, ItemResponse
+from shared.schemas import TodoCreate, TodoResponse
 
-__all__ = ["ItemCreate", "ItemResponse"]
+__all__ = ["TodoCreate", "TodoResponse"]

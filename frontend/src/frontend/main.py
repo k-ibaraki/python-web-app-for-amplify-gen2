@@ -4,53 +4,119 @@ from frontend.services.api_client import ApiClient
 
 
 async def main(page: ft.Page):
-    page.title = "Flet + FastAPI Demo"
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.title = "Todo App"
+    page.theme_mode = ft.ThemeMode.DARK
+    page.padding = 40
+    page.window.width = 500
+    page.window.height = 700
+    page.bgcolor = "#1a1a2e"
 
     api = ApiClient()
+    todos_container = ft.Column(spacing=8)
 
-    # 入力フィールド
-    name_field = ft.TextField(label="アイテム名", width=300)
-    price_field = ft.TextField(
-        label="価格", width=300, keyboard_type=ft.KeyboardType.NUMBER
-    )
-
-    # アイテムリスト表示
-    items_column = ft.Column()
-
-    async def refresh_items():
-        items_column.controls.clear()
-        items = await api.get_items()
-        for item in items:
-            items_column.controls.append(ft.Text(f"{item.name}: ¥{item.price:.0f}"))
+    async def refresh_todos():
+        todos_container.controls.clear()
+        todos = await api.get_todos()
+        for todo in todos:
+            todos_container.controls.append(create_todo_item(todo))
         page.update()
 
-    async def add_item(e):
-        if name_field.value and price_field.value:
-            await api.create_item(name_field.value, float(price_field.value))
-            name_field.value = ""
-            price_field.value = ""
-            await refresh_items()
+    def create_todo_item(todo):
+        return ft.Container(
+            content=ft.Row(
+                [
+                    ft.Checkbox(
+                        value=todo.completed,
+                        on_change=lambda e, tid=todo.id: page.run_task(
+                            toggle_todo, tid
+                        ),
+                        active_color="#6c63ff",
+                    ),
+                    ft.Text(
+                        todo.title if not todo.completed else f"✓ {todo.title}",
+                        size=16,
+                        weight=ft.FontWeight.W_400,
+                        color="#ffffff" if not todo.completed else "#666666",
+                        italic=todo.completed,
+                        expand=True,
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE_OUTLINE,
+                        icon_color="#ff6b6b",
+                        icon_size=20,
+                        on_click=lambda e, tid=todo.id: page.run_task(delete_todo, tid),
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.START,
+            ),
+            bgcolor="#16213e",
+            border_radius=12,
+            padding=ft.padding.symmetric(horizontal=16, vertical=8),
+        )
 
-    add_button = ft.Button("追加", on_click=add_item)
+    async def toggle_todo(todo_id: int):
+        await api.toggle_todo(todo_id)
+        await refresh_todos()
+
+    async def delete_todo(todo_id: int):
+        await api.delete_todo(todo_id)
+        await refresh_todos()
+
+    async def add_todo(e):
+        if input_field.value:
+            await api.create_todo(input_field.value)
+            input_field.value = ""
+            input_field.focus()
+            await refresh_todos()
+
+    input_field = ft.TextField(
+        hint_text="Add a new task...",
+        border_radius=12,
+        bgcolor="#16213e",
+        border_color="#6c63ff",
+        focused_border_color="#6c63ff",
+        cursor_color="#6c63ff",
+        text_style=ft.TextStyle(color="#ffffff"),
+        hint_style=ft.TextStyle(color="#666666"),
+        expand=True,
+        on_submit=add_todo,
+    )
+
+    add_button = ft.IconButton(
+        icon=ft.Icons.ADD_CIRCLE,
+        icon_color="#6c63ff",
+        icon_size=40,
+        on_click=add_todo,
+    )
 
     page.add(
         ft.Column(
             [
-                ft.Text("アイテム管理", size=24, weight=ft.FontWeight.BOLD),
-                name_field,
-                price_field,
-                add_button,
-                ft.Divider(),
-                ft.Text("登録済みアイテム", size=18),
-                items_column,
+                ft.Text(
+                    "Todo",
+                    size=36,
+                    weight=ft.FontWeight.BOLD,
+                    color="#ffffff",
+                ),
+                ft.Text(
+                    "Keep track of your tasks",
+                    size=14,
+                    color="#666666",
+                ),
+                ft.Container(height=24),
+                ft.Row(
+                    [input_field, add_button],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
+                ft.Container(height=24),
+                todos_container,
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            expand=True,
         )
     )
 
-    await refresh_items()
+    await refresh_todos()
 
 
 ft.run(main)

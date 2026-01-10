@@ -1,6 +1,6 @@
 import httpx
 
-from shared import ItemCreate, ItemResponse
+from shared import TodoCreate, TodoResponse
 
 
 class ApiClient:
@@ -9,18 +9,29 @@ class ApiClient:
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
 
-    async def get_items(self) -> list[ItemResponse]:
+    async def get_todos(self) -> list[TodoResponse]:
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"{self.base_url}/items")
+            response = await client.get(f"{self.base_url}/todos")
             response.raise_for_status()
-            return [ItemResponse(**item) for item in response.json()]
+            return [TodoResponse(**todo) for todo in response.json()]
 
-    async def create_item(self, name: str, price: float) -> ItemResponse:
+    async def create_todo(self, title: str) -> TodoResponse:
         async with httpx.AsyncClient() as client:
-            payload = ItemCreate(name=name, price=price)
+            payload = TodoCreate(title=title)
             response = await client.post(
-                f"{self.base_url}/items",
+                f"{self.base_url}/todos",
                 json=payload.model_dump(),
             )
             response.raise_for_status()
-            return ItemResponse(**response.json())
+            return TodoResponse(**response.json())
+
+    async def toggle_todo(self, todo_id: int) -> TodoResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(f"{self.base_url}/todos/{todo_id}/toggle")
+            response.raise_for_status()
+            return TodoResponse(**response.json())
+
+    async def delete_todo(self, todo_id: int) -> None:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(f"{self.base_url}/todos/{todo_id}")
+            response.raise_for_status()

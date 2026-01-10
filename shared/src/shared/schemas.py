@@ -1,16 +1,15 @@
 from pydantic import BaseModel
 
 
-class ItemCreate(BaseModel):
-    """アイテム作成リクエスト"""
+class TodoCreate(BaseModel):
+    """Todo作成リクエスト"""
 
-    name: str
-    price: float
+    title: str
 
 
-class ItemResponse(BaseModel):
-    """アイテムレスポンス"""
+class TodoResponse(BaseModel):
+    """Todoレスポンス"""
 
     id: int
-    name: str
-    price: float
+    title: str
+    completed: bool

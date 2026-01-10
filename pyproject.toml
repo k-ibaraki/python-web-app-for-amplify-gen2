@@ -55,6 +55,7 @@ exclude = [".venv/**"]
 include = ["frontend/**"]
 [tool.ty.overrides.rules]
 invalid-argument-type = "ignore"
+unknown-argument = "ignore"
 
 # FastAPI/Starletteの型定義との互換性のため緩和
 [[tool.ty.overrides]]

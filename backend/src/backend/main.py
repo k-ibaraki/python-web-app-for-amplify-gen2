@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.routers import items
+from backend.routers import todos
 
 app = FastAPI(title="Backend API")
 
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(items.router)
+app.include_router(todos.router)
 
 
 @app.get("/health")
