@@ -6,3 +6,6 @@ __pycache__/
 dist/
 build/
 .eggs/
+
+# Claude Code
+.claude/settings.local.json
