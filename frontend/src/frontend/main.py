@@ -12,7 +12,9 @@ async def main(page: ft.Page):
 
     # 入力フィールド
     name_field = ft.TextField(label="アイテム名", width=300)
-    price_field = ft.TextField(label="価格", width=300, keyboard_type=ft.KeyboardType.NUMBER)
+    price_field = ft.TextField(
+        label="価格", width=300, keyboard_type=ft.KeyboardType.NUMBER
+    )
 
     # アイテムリスト表示
     items_column = ft.Column()
@@ -21,9 +23,7 @@ async def main(page: ft.Page):
         items_column.controls.clear()
         items = await api.get_items()
         for item in items:
-            items_column.controls.append(
-                ft.Text(f"{item.name}: ¥{item.price:.0f}")
-            )
+            items_column.controls.append(ft.Text(f"{item.name}: ¥{item.price:.0f}"))
         page.update()
 
     async def add_item(e):
