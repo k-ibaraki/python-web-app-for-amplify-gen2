@@ -1,0 +1,30 @@
+[project]
+name = "python-web-app"
+version = "0.1.0"
+description = "Flet frontend + FastAPI backend monorepo"
+requires-python = ">=3.12"
+dependencies = [
+    "frontend",
+    "backend",
+]
+
+[project.scripts]
+dev-frontend = "scripts.run:dev_frontend"
+dev-frontend-desktop = "scripts.run:dev_frontend_desktop"
+dev-backend = "scripts.run:dev_backend"
+build-frontend = "scripts.run:build_frontend"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]
+
+[tool.uv.workspace]
+members = ["shared", "frontend", "backend"]
+
+[tool.uv.sources]
+shared = { workspace = true }
+frontend = { workspace = true }
+backend = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
