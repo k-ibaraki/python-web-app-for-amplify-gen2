@@ -1,17 +1,42 @@
 [project]
 name = "frontend"
 version = "0.1.0"
-description = "Flet CSR frontend"
+description = "Flet Todo App"
 requires-python = ">=3.12"
 dependencies = [
     "flet[all]>=0.80.0",
     "httpx",
-    "shared",
+    "pydantic>=2.0",
 ]
 
-[tool.uv.sources]
-shared = { workspace = true }
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+dev = "scripts:dev"
+dev-desktop = "scripts:dev_desktop"
+build = "scripts:build"
+lint = "scripts:lint"
+fix = "scripts:fix"
+fmt = "scripts:format_code"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src", "scripts"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

@@ -1,89 +1,73 @@
 # Python Web App for Amplify Gen2
 
 Flet 1.0 Beta（フロントエンド）+ FastAPI（バックエンド）によるフルPython Webアプリケーション。
-TODOアプリのサンプル実装。
-
-## 技術スタック
-
-| レイヤー | 技術 |
-|---------|------|
-| フロントエンド | Flet 1.0 Beta (CSR) |
-| バックエンド | FastAPI |
-| 型定義共有 | Pydantic |
-| パッケージ管理 | uv workspace |
-| 型チェック | ty (高速型チェッカー) |
-| リンター/フォーマッター | ruff |
 
 ## プロジェクト構成
 
 ```
 .
-├── pyproject.toml      # ワークスペース定義・スクリプト
-├── shared/             # 共有型定義（Pydanticスキーマ）
-├── frontend/           # Flet CSRアプリ
-├── backend/            # FastAPI サーバー
-└── scripts/            # 起動・ビルドスクリプト
+├── frontend/          # Flet CSRアプリ（独立プロジェクト）
+│   ├── src/           # ソースコード
+│   │   ├── main.py
+│   │   ├── api_client.py
+│   │   └── schemas.py
+│   └── scripts/       # 開発スクリプト
+└── backend/           # FastAPI サーバー（独立プロジェクト）
+    ├── src/           # ソースコード
+    │   ├── main.py
+    │   └── schemas.py
+    └── scripts/       # 開発スクリプト
 ```
+
+フロントエンドとバックエンドは完全に独立したプロジェクトとして管理されています。
 
 ## セットアップ
 
+### Backend
+
 ```bash
-# 依存関係インストール
-uv sync --all-packages
+cd backend
+uv sync
+```
+
+### Frontend
+
+```bash
+cd frontend
+uv sync
 ```
 
 ## 開発コマンド
 
+### Backend（`backend/`ディレクトリで実行）
+
 | コマンド | 説明 |
 |---------|------|
-| `uv run dev-frontend` | フロントエンド開発サーバー（Web） |
-| `uv run dev-frontend-desktop` | フロントエンド開発サーバー（Desktop） |
-| `uv run dev-backend` | バックエンド開発サーバー（port 8000） |
-| `uv run build-frontend` | フロントエンドビルド（CSR静的ファイル） |
-| `uv run lint` | コードリント |
-| `uv run fix` | コード自動修正 |
-| `uv run fmt` | コードフォーマット |
+| `uv run dev` | 開発サーバー起動（port 8000） |
+| `uv run lint` | リントチェック |
+| `uv run fix` | 自動修正 + フォーマット |
 | `uv run typecheck` | 型チェック |
-| `uv run check` | 全チェック（lint + typecheck） |
+| `uv run check` | lint + typecheck |
+
+### Frontend（`frontend/`ディレクトリで実行）
+
+| コマンド | 説明 |
+|---------|------|
+| `uv run dev` | 開発サーバー（Web） |
+| `uv run dev-desktop` | 開発サーバー（Desktop） |
+| `uv run build` | ビルド（CSR静的ファイル） |
+| `uv run lint` | リントチェック |
+| `uv run fix` | 自動修正 + フォーマット |
 
 ## 開発の始め方
 
 ```bash
 # ターミナル1: バックエンド起動
-uv run dev-backend
+cd backend && uv run dev
 
 # ターミナル2: フロントエンド起動
-uv run dev-frontend
+cd frontend && uv run dev
 ```
 
-- フロントエンド: http://localhost:8550
 - バックエンド: http://localhost:8000
 - バックエンドAPI docs: http://localhost:8000/docs
-
-## 実装済み機能
-
-- TODOの作成・表示・削除
-- リアルタイムUI更新
-- 型安全なAPI通信
-- レスポンシブデザイン
-
-## アーキテクチャ
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                        shared                            │
-│                  (Pydanticスキーマ)                      │
-│                   TodoCreate                             │
-│                   TodoResponse                           │
-└─────────────────────────────────────────────────────────┘
-           ▲                              ▲
-           │ import                       │ import
-           │                              │
-┌──────────┴──────────┐      HTTP    ┌────┴─────────────┐
-│      frontend       │◄───────────►│     backend       │
-│   Flet 1.0 Beta     │   (REST)    │     FastAPI       │
-│      (CSR)          │             │   /todos API      │
-└─────────────────────┘              └───────────────────┘
-```
-
-`shared`パッケージで型定義を共有し、フロントエンド・バックエンド間の型安全性を確保。

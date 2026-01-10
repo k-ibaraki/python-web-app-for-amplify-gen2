@@ -1,6 +1,6 @@
 import httpx
 
-from shared import TodoCreate, TodoResponse
+from schemas import TodoCreate, TodoResponse
 
 
 class ApiClient:

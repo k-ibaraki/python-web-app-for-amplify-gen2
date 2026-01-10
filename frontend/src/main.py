@@ -1,13 +1,12 @@
 import flet as ft
-from services.api_client import ApiClient
+
+from api_client import ApiClient
 
 
 async def main(page: ft.Page):
     page.title = "Todo App"
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 40
-    page.window.width = 500
-    page.window.height = 700
     page.bgcolor = "#1a1a2e"
 
     api = ApiClient()
@@ -65,7 +64,6 @@ async def main(page: ft.Page):
         if input_field.value:
             await api.create_todo(input_field.value)
             input_field.value = ""
-            input_field.focus()
             await refresh_todos()
 
     input_field = ft.TextField(

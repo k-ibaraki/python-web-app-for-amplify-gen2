@@ -1,17 +1,52 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "FastAPI backend"
+description = "FastAPI Todo Backend"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
-    "shared",
+    "pydantic>=2.0",
 ]
 
-[tool.uv.sources]
-shared = { workspace = true }
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "ty>=0.0.1a26",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+dev = "scripts:dev"
+lint = "scripts:lint"
+fix = "scripts:fix"
+fmt = "scripts:format_code"
+typecheck = "scripts:typecheck"
+check = "scripts:check"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src", "scripts"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ty]
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ty.src]
+exclude = [".venv/**"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
