@@ -1,0 +1,33 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        # Backend is deployed via GitHub Actions (npx ampx pipeline-deploy)
+        # Here we only generate amplify_outputs.json for frontend build
+        - npm ci
+        - npx ampx generate outputs --branch $AWS_BRANCH --app-id $AWS_APP_ID
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend
+        # Install uv
+        - curl -LsSf https://astral.sh/uv/install.sh | sh
+        - export PATH="$HOME/.local/bin:$PATH"
+        - uv --version
+        # Sync dependencies
+        - uv sync
+    build:
+      commands:
+        - export PATH="$HOME/.local/bin:$PATH"
+        # Build Flet web app (generates config.py and requirements.txt automatically)
+        - uv run build
+  artifacts:
+    baseDirectory: frontend/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - frontend/.venv/**/*
+      - $HOME/.local/bin/uv

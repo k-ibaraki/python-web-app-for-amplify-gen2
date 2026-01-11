@@ -79,3 +79,28 @@ cd frontend && uv run build
 ```
 
 ビルド時に`pyproject.toml`から`src/requirements.txt`が自動生成され、`dist/`に静的ファイルが出力されます。
+
+## デプロイ
+
+### ローカル開発環境（Sandbox）
+
+```bash
+# 依存関係インストール
+npm ci
+
+# Amplify sandboxでバックエンドをデプロイ
+npx ampx sandbox --once
+```
+
+`amplify_outputs.json`が生成され、フロントエンドビルド時にAPI URLが自動設定されます。
+
+### 本番環境（CD）
+
+`main`ブランチへのpushで自動デプロイが実行されます。
+
+| コンポーネント | 担当 | 処理内容 |
+|--------------|------|---------|
+| Backend | GitHub Actions | Docker build → ECR → Lambda + API Gateway |
+| Frontend | Amplify CD | Flet build → Amplify Hosting |
+
+詳細なセットアップ手順は [`DEPLOY.md`](./DEPLOY.md) を参照してください。
