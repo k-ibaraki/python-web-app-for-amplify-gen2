@@ -42,7 +42,7 @@ uv run fix        # 自動修正 + フォーマット
 ```bash
 uv sync           # 依存関係インストール
 uv run dev        # 開発サーバー起動（Web）
-uv run build      # ビルド
+uv run build      # Webビルド（src/requirements.txt自動生成）
 uv run fix        # 自動修正 + フォーマット
 ```
 

@@ -276,7 +276,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "flet", extras = ["all"], specifier = ">=0.80.0" },
+    { name = "flet", extras = ["all"], specifier = "==0.80.1" },
     { name = "httpx" },
     { name = "pydantic", specifier = ">=2.0" },
 ]

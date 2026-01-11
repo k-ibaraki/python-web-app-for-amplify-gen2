@@ -55,7 +55,7 @@ uv sync
 |---------|------|
 | `uv run dev` | 開発サーバー（Web） |
 | `uv run dev-desktop` | 開発サーバー（Desktop） |
-| `uv run build` | ビルド（CSR静的ファイル） |
+| `uv run build` | Webビルド（CSR静的ファイル生成） |
 | `uv run lint` | リントチェック |
 | `uv run fix` | 自動修正 + フォーマット |
 
@@ -71,3 +71,11 @@ cd frontend && uv run dev
 
 - バックエンド: http://localhost:8000
 - バックエンドAPI docs: http://localhost:8000/docs
+
+## Webビルド
+
+```bash
+cd frontend && uv run build
+```
+
+ビルド時に`pyproject.toml`から`src/requirements.txt`が自動生成され、`dist/`に静的ファイルが出力されます。

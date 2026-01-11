@@ -8,5 +8,8 @@ build/
 .eggs/
 .ruff_cache/
 
+# Auto-generated for web build
+frontend/src/requirements.txt
+
 # Claude Code
 .claude/settings.local.json
