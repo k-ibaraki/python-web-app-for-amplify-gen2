@@ -50,6 +50,7 @@ jobs:
       - name: Deploy backend with Amplify pipeline
         env:
           CI: 1
+          DOCKER_DEFAULT_PLATFORM: linux/arm64
         run: |
           npx ampx pipeline-deploy \
             --branch ${{ github.ref_name }} \
