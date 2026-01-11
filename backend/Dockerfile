@@ -7,10 +7,10 @@ COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml .
+COPY pyproject.toml uv.lock ./
 
 # Install dependencies
-RUN uv pip install --system --no-cache -e .
+RUN uv sync --frozen --no-dev
 
 # Copy source code
 COPY src/ ./src/
@@ -19,4 +19,4 @@ COPY src/ ./src/
 ENV PORT=8080
 
 # Start the server
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
