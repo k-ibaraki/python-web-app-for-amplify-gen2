@@ -94,13 +94,25 @@ npx ampx sandbox --once
 
 `amplify_outputs.json`が生成され、フロントエンドビルド時にAPI URLが自動設定されます。
 
-### 本番環境（CD）
+### 本番環境（CI/CD）
 
 `main`ブランチへのpushで自動デプロイが実行されます。
+
+**デプロイフロー:**
+```
+GitHub push → GitHub Actions (Backend) → Webhook → Amplify CD (Frontend)
+```
 
 | コンポーネント | 担当 | 処理内容 |
 |--------------|------|---------|
 | Backend | GitHub Actions | Docker build → ECR → Lambda + API Gateway |
-| Frontend | Amplify CD | Flet build → Amplify Hosting |
+| Frontend | Amplify CD | Webhookトリガー → Flet build → Amplify Hosting |
+
+**初回セットアップ手順:**
+1. Amplifyコンソールで GitHub連携してアプリを作成
+2. 自動ビルドを無効化
+3. Webhookを作成してGitHub Secretsに設定
+4. OIDC認証用のIAMロールを作成
+5. GitHub Secretsを設定（`AWS_IAM_ROLE_ARN`、`AMPLIFY_APP_ID`、`AMPLIFY_WEBHOOK_URL`）
 
 詳細なセットアップ手順は [`DEPLOY.md`](./DEPLOY.md) を参照してください。
