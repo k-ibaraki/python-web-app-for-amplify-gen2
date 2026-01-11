@@ -14,17 +14,17 @@ const backend = defineBackend({});
 
 const apiStack = backend.createStack('ApiStack');
 
-// FastAPI backend as Docker Lambda (ARM64 for cost efficiency)
+// FastAPI backend as Docker Lambda (x86_64 for GitHub Actions compatibility)
 const apiFunction = new lambda.DockerImageFunction(apiStack, 'ApiFunction', {
   code: lambda.DockerImageCode.fromImageAsset(
     join(__dirname, '../backend'),
     {
-      platform: Platform.LINUX_ARM64,
+      platform: Platform.LINUX_AMD64,
     }
   ),
   memorySize: 512,
   timeout: Duration.seconds(30),
-  architecture: lambda.Architecture.ARM_64,
+  architecture: lambda.Architecture.X86_64,
 });
 
 // API Gateway + Lambda integration
