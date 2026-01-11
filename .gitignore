@@ -11,12 +11,21 @@ build/
 # Auto-generated for web build
 frontend/src/requirements.txt
 frontend/src/config.py
+frontend/deploy.zip
 
 # Claude Code
 .claude/settings.local.json
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+package-lock.json
+
 # amplify
-node_modules
 .amplify
 amplify_outputs*
 amplifyconfiguration*
