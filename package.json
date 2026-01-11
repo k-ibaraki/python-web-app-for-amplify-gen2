@@ -1,0 +1,34 @@
+{
+  "name": "python-web-app-for-amplify-gen2",
+  "version": "1.0.0",
+  "description": "Flet 1.0 Beta（フロントエンド）+ FastAPI（バックエンド）によるフルPython Webアプリケーション。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k-ibaraki/python-web-app-for-amplify-gen2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/k-ibaraki/python-web-app-for-amplify-gen2/issues"
+  },
+  "homepage": "https://github.com/k-ibaraki/python-web-app-for-amplify-gen2#readme",
+  "devDependencies": {
+    "@aws-amplify/backend": "^1.19.0",
+    "@aws-amplify/backend-cli": "^1.8.1",
+    "@types/node": "^25.0.6",
+    "aws-cdk-lib": "^2.216.0",
+    "constructs": "^10.4.4",
+    "esbuild": "^0.27.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@aws-solutions-constructs/aws-apigateway-lambda": "^2.97.0",
+    "aws-amplify": "^6.15.9"
+  }
+}

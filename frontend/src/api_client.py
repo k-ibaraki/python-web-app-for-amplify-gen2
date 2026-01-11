@@ -2,12 +2,19 @@ import httpx
 
 from schemas import TodoCreate, TodoResponse
 
+# ビルド時に生成されるconfig.pyから設定を読み取る
+try:
+    from config import API_URL as DEFAULT_API_URL
+except ImportError:
+    # 開発時はconfig.pyが存在しないのでデフォルト値を使用
+    DEFAULT_API_URL = "http://localhost:8000"
+
 
 class ApiClient:
     """バックエンドAPIクライアント"""
 
-    def __init__(self, base_url: str = "http://localhost:8000"):
-        self.base_url = base_url
+    def __init__(self, base_url: str | None = None):
+        self.base_url = base_url or DEFAULT_API_URL
 
     async def get_todos(self) -> list[TodoResponse]:
         async with httpx.AsyncClient() as client:
