@@ -192,7 +192,14 @@ arn:aws:iam::<AWS_ACCOUNT_ID>:role/GitHubActionsAmplifyDeployRole
 
 ## 4. GitHub Secretsの設定
 
-GitHubリポジトリの Settings → Secrets and variables → Actions から以下を設定：
+GitHubリポジトリの Settings → Environments から環境を作成し、以下のシークレットを設定：
+
+### 4.1 Environment作成
+1. Settings → Environments → New environment
+2. Environment name: `main` (ブランチ名と同じ)
+3. Configure environment
+
+### 4.2 Environment secrets設定
 
 | Secret名 | 説明 | 例 |
 |---------|------|-----|
