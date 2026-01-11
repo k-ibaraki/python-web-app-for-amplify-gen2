@@ -59,6 +59,7 @@ jobs:
         run: |
           curl -X POST -d {} \
             "${{ secrets.AMPLIFY_WEBHOOK_URL }}" \
+            -H "Content-Type:application/json" \
             --fail --silent --show-error
 
       - name: Backend deployment complete
