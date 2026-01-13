@@ -16,11 +16,17 @@ frontend:
         - curl -LsSf https://astral.sh/uv/install.sh | sh
         - export PATH="$HOME/.local/bin:$PATH"
         - uv --version
+        # Install Flutter SDK (required for Flet web build)
+        - git clone https://github.com/flutter/flutter.git -b stable --depth 1 $HOME/flutter
+        - export PATH="$HOME/flutter/bin:$PATH"
+        - flutter --version
+        - flutter config --no-analytics
+        - flutter precache --web
         # Sync dependencies
         - uv sync
     build:
       commands:
-        - export PATH="$HOME/.local/bin:$PATH"
+        - export PATH="$HOME/.local/bin:$HOME/flutter/bin:$PATH"
         # Disable interactive output for CI/CD environment
         - export CI=true
         - export TERM=dumb
@@ -35,3 +41,4 @@ frontend:
     paths:
       - frontend/.venv/**/*
       - $HOME/.local/bin/uv
+      - $HOME/flutter/**/*

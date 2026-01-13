@@ -12,10 +12,33 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-1
-  NODE_VERSION: '22'
+  NODE_VERSION: "22"
 
 jobs:
-  deploy-backend:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.filter.outputs.backend }}
+      frontend-changed: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Check changed paths
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'amplify/**'
+              - 'package.json'
+              - 'package-lock.json'
+            frontend:
+              - 'frontend/**'
+
+  generate-outputs:
+    needs: check-changes
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +49,40 @@ jobs:
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Generate amplify_outputs.json
+        run: |
+          npx ampx generate outputs \
+            --branch ${{ github.ref_name }} \
+            --app-id ${{ secrets.AMPLIFY_APP_ID }}
+
+      - name: Outputs generated
+        run: echo "amplify_outputs.json generated for frontend build"
+
+  deploy-backend:
+    needs: check-changes
+    if: needs.check-changes.outputs.backend-changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
       - name: Debug GitHub context
         run: |
@@ -54,7 +110,19 @@ jobs:
             --branch ${{ github.ref_name }} \
             --app-id ${{ secrets.AMPLIFY_APP_ID }}
 
-      # Trigger Amplify frontend build via webhook
+      - name: Backend deployment complete
+        run: echo "Backend deployed successfully!"
+
+  trigger-frontend:
+    needs: [check-changes, generate-outputs, deploy-backend]
+    if: |
+      always() &&
+      needs.generate-outputs.result == 'success' &&
+      needs.deploy-backend.result != 'failure' &&
+      (needs.check-changes.outputs.frontend-changed == 'true' ||
+       needs.deploy-backend.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger Amplify frontend build
         run: |
           curl -X POST -d {} \
@@ -62,7 +130,5 @@ jobs:
             -H "Content-Type:application/json" \
             --fail --silent --show-error
 
-      - name: Backend deployment complete
-        run: |
-          echo "Backend deployed successfully!"
-          echo "Frontend build triggered via Amplify webhook."
+      - name: Frontend build triggered
+        run: echo "Frontend build triggered via Amplify webhook."
