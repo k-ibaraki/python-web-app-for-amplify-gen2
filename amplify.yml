@@ -21,12 +21,16 @@ frontend:
     build:
       commands:
         - export PATH="$HOME/.local/bin:$PATH"
+        # Disable interactive output for CI/CD environment
+        - export CI=true
+        - export TERM=dumb
+        - export NO_COLOR=1
         # Build Flet web app (generates config.py and requirements.txt automatically)
         - uv run build
   artifacts:
     baseDirectory: frontend/dist
     files:
-      - '**/*'
+      - "**/*"
   cache:
     paths:
       - frontend/.venv/**/*
