@@ -18,8 +18,7 @@ jobs:
   check-changes:
     runs-on: ubuntu-latest
     outputs:
-      backend-changed: ${{ steps.filter.outputs.backend }}
-      frontend-changed: ${{ steps.filter.outputs.frontend }}
+      frontend-only: ${{ steps.filter.outputs.frontend == 'true' && steps.filter.outputs.backend != 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -37,41 +36,9 @@ jobs:
             frontend:
               - 'frontend/**'
 
-  generate-outputs:
-    needs: check-changes
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
-        with:
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Generate amplify_outputs.json
-        run: |
-          npx ampx generate outputs \
-            --branch ${{ github.ref_name }} \
-            --app-id ${{ secrets.AMPLIFY_APP_ID }}
-
-      - name: Outputs generated
-        run: echo "amplify_outputs.json generated for frontend build"
-
   deploy-backend:
     needs: check-changes
-    if: needs.check-changes.outputs.backend-changed == 'true' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || needs.check-changes.outputs.frontend-only != 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -114,13 +81,8 @@ jobs:
         run: echo "Backend deployed successfully!"
 
   trigger-frontend:
-    needs: [check-changes, generate-outputs, deploy-backend]
-    if: |
-      always() &&
-      needs.generate-outputs.result == 'success' &&
-      needs.deploy-backend.result != 'failure' &&
-      (needs.check-changes.outputs.frontend-changed == 'true' ||
-       needs.deploy-backend.result == 'success')
+    needs: [check-changes, deploy-backend]
+    if: always() && needs.deploy-backend.result != 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Amplify frontend build
