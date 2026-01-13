@@ -1,33 +1,77 @@
 # デプロイガイド
 
-Amplify Gen2 + GitHub Actions によるCD（継続的デプロイ）の構築手順。
+Amplify Gen2 + GitHub Actions によるCI/CD（継続的インテグレーション/デプロイ）の構築手順。
+
+フロントエンドのみの変更時はバックエンドのビルドをスキップする最適化されたパイプライン。
 
 ## アーキテクチャ
 
 ```
-┌─────────────────┐
-│  GitHub Actions │
-└────────┬────────┘
-         │
-         ├─── Backend: npx ampx pipeline-deploy
-         │    └─── Docker build → ECR push → Lambda update
-         │
-         └─── Webhook trigger
-              ↓
-┌─────────────────┐
-│   Amplify CD    │
-└────────┬────────┘
-         │
-         └─── Frontend: Flet build → Amplify Hosting
-              └─── ampx generate outputs → uv run build → deploy
+┌──────────────┐
+│ GitHub Push  │
+└──────┬───────┘
+       │
+       ↓
+┌────────────────────────────────────────────────┐
+│          GitHub Actions Workflow               │
+│  ┌──────────────────────────────────────────┐  │
+│  │  1. Check Changes (paths-filter)         │  │
+│  │     - frontend/** → frontend-only flag   │  │
+│  │     - backend/** → backend-changed flag  │  │
+│  └──────────────────────────────────────────┘  │
+│                    │                            │
+│       ┌────────────┴────────────┐               │
+│       ↓                         ↓               │
+│  ┌─────────────┐          ┌─────────────────┐  │
+│  │ Deploy      │          │ Skip Backend    │  │
+│  │ Backend     │          │ (frontend-only) │  │
+│  │ - Docker    │          └─────────────────┘  │
+│  │ - ECR       │                                │
+│  │ - Lambda    │                                │
+│  └─────────────┘                                │
+│       │                                         │
+│       └──────────────┬──────────────────────────┤
+│                      ↓                          │
+│            ┌──────────────────┐                 │
+│            │ Trigger Webhook  │                 │
+│            └──────────────────┘                 │
+└────────────────────┬───────────────────────────┘
+                     │
+                     ↓
+         ┌───────────────────────┐
+         │   Amplify Hosting     │
+         │  ┌─────────────────┐  │
+         │  │ 1. Install      │  │
+         │  │    Flutter SDK  │  │
+         │  ├─────────────────┤  │
+         │  │ 2. Generate     │  │
+         │  │    outputs.json │  │
+         │  ├─────────────────┤  │
+         │  │ 3. uv run build │  │
+         │  │    (Flet Web)   │  │
+         │  ├─────────────────┤  │
+         │  │ 4. Deploy static│  │
+         │  │    files        │  │
+         │  └─────────────────┘  │
+         └───────────────────────┘
 ```
 
-## 責務の分離
+## 責務の分離と最適化
 
 | コンポーネント | 担当 | 理由 |
 |--------------|------|------|
-| Backend | GitHub Actions | Docker環境が必要 |
-| Frontend | Amplify CD | Amplifyホスティング機能をフル活用 |
+| Backend | GitHub Actions | Docker環境が必要 / ECRへのpush |
+| Frontend | Amplify Hosting | Flutter SDKのインストール / グローバル配信 |
+
+### CI/CDの最適化
+
+| 変更内容 | Backend Deploy | Frontend Build |
+|---------|----------------|----------------|
+| `frontend/**`のみ | ⏭️ スキップ | ✅ 実行 |
+| `backend/**` | ✅ 実行 | ✅ 実行 |
+| 両方変更 | ✅ 実行 | ✅ 実行 |
+| その他のファイル | ✅ 実行 | ✅ 実行 |
+| 手動実行 | ✅ 実行 | ✅ 実行 |
 
 ## 前提条件
 
@@ -235,35 +279,160 @@ https://main.<AMPLIFY_APP_ID>.amplifyapp.com
 
 ## デプロイフロー
 
+### パターン1: バックエンド変更時（または両方）
+
 ```
 1. GitHub push to main
    ↓
-2. GitHub Actions triggered
+2. GitHub Actions - check-changes
+   ├── frontend-only: false
+   └── backend-changed: true
+   ↓
+3. GitHub Actions - deploy-backend
    ├── npm ci
    └── npx ampx pipeline-deploy
-       ├── Docker build
+       ├── Docker build (uv + FastAPI + Lambda Web Adapter)
        ├── ECR push
-       ├── Lambda update
-       └── API Gateway update
+       ├── Lambda function update
+       ├── API Gateway update
+       └── amplify_outputs.json generated
    ↓
-3. curl Webhook (trigger Amplify build)
+4. GitHub Actions - trigger-frontend
+   └── curl POST to Amplify Webhook
    ↓
-4. Amplify CD starts
+5. Amplify Hosting Build
+   ├── Install Flutter SDK (cached after first build)
    ├── npm ci
    ├── npx ampx generate outputs (amplify_outputs.json)
    ├── cd frontend
    ├── uv sync
    └── uv run build
-       ├── Read amplify_outputs.json
-       ├── Generate config.py with API URL
-       └── Build Flet web app
+       ├── Read amplify_outputs.json → get API_URL
+       ├── Generate src/config.py with API_URL
+       ├── Generate src/requirements.txt from pyproject.toml
+       └── flet build web → frontend/dist/
    ↓
-5. Amplify deploys frontend/dist to Hosting
+6. Amplify deploys frontend/dist to global CDN
+   ↓
+7. Deployment complete ✅
+```
+
+### パターン2: フロントエンドのみ変更時
+
+```
+1. GitHub push to main (frontend/** only)
+   ↓
+2. GitHub Actions - check-changes
+   ├── frontend-only: true
+   └── backend-changed: false
+   ↓
+3. GitHub Actions - deploy-backend
+   └── ⏭️ SKIPPED (条件に一致しない)
+   ↓
+4. GitHub Actions - trigger-frontend
+   └── curl POST to Amplify Webhook
+   ↓
+5. Amplify Hosting Build
+   └── (同じビルドプロセス)
    ↓
 6. Deployment complete ✅
+   └── バックエンドは変更なし、フロントエンドのみ更新
 ```
+
+## トラブルシューティング
+
+### 1. API Gateway 404エラー
+
+**症状**: `https://<api-url>/prod/todos`にアクセスすると404エラー
+
+**原因**: FastAPIの`root_path`がAPI Gatewayのステージプレフィックス`/prod`に対応していない
+
+**解決策**: 
+- `backend/src/main.py`で環境変数`API_ROOT_PATH`を使用
+- `amplify/backend.ts`のLambda環境変数で`API_ROOT_PATH: "/prod"`を設定
+
+### 2. CORSエラー
+
+**症状**: フロントエンドからAPIを呼び出すとCORSエラー
+
+**解決策**:
+1. FastAPIのCORSミドルウェアを確認（`allow_origins=["*"]`）
+2. API GatewayのCORS設定を確認（`allowOrigins: ["*"]`）
+3. Lambda Web Adapterの環境変数を設定：
+   - `AWS_LWA_INVOKE_MODE=response_stream`
+   - `AWS_LWA_READINESS_CHECK_PATH=/health`
+
+### 3. Flet Build時に制御文字でハング
+
+**症状**: Amplifyビルドログで`[?25l`という出力後に止まる
+
+**原因**: FletやuvのプログレスバーがCI環境で問題を起こす
+
+**解決策**: `amplify.yml`で非インタラクティブモード用の環境変数を設定
+```yaml
+- export CI=true
+- export TERM=dumb
+- export NO_COLOR=1
+```
+
+### 4. Flutter SDKが見つからない
+
+**症状**: `Flutter SDK not found or invalid version installed.`
+
+**原因**: Amplify環境にFlutter SDKがインストールされていない
+
+**解決策**: `amplify.yml`のpreBuildフェーズでFlutter SDKをインストール
+```yaml
+- git clone https://github.com/flutter/flutter.git -b stable --depth 1 $HOME/flutter
+- export PATH="$HOME/flutter/bin:$PATH"
+- flutter precache --web
+```
+
+### 5. GitHub Actionsのビルドが常に実行される
+
+**症状**: フロントエンドのみ変更してもバックエンドがビルドされる
+
+**確認ポイント**:
+1. `.github/workflows/deploy.yml`の`check-changes`ジョブが正しく動作しているか
+2. `frontend-only`フラグが正しく設定されているか
+3. ログで以下を確認：
+   ```
+   frontend-only: true
+   backend-changed: false
+   → deploy-backend should be SKIPPED
+   ```
+
+## 環境変数一覧
+
+### GitHub Secrets
+
+| Secret名 | 説明 | 設定先 |
+|---------|------|--------|
+| `AWS_IAM_ROLE_ARN` | OIDC認証用IAMロール | GitHub Actions |
+| `AMPLIFY_APP_ID` | AmplifyアプリケーションID | GitHub Actions |
+| `AMPLIFY_WEBHOOK_URL` | Amplify受信WebhookのURL | GitHub Actions |
+
+### Lambda環境変数（Amplify Gen2）
+
+| 変数名 | 値 | 説明 |
+|-------|-----|------|
+| `API_ROOT_PATH` | `/prod` | API Gatewayステージプレフィックス |
+| `PORT` | `8080` | Lambda Web Adapterリッスンポート |
+| `AWS_LWA_INVOKE_MODE` | `response_stream` | Lambda Web Adapterモード |
+| `AWS_LWA_READINESS_CHECK_PATH` | `/health` | ヘルスチェックパス |
+
+### Amplify Build環境変数（amplify.yml）
+
+| 変数名 | 値 | 説明 |
+|-------|-----|------|
+| `CI` | `true` | CI環境フラグ |
+| `TERM` | `dumb` | ターミナル制御文字無効化 |
+| `NO_COLOR` | `1` | カラー出力無効化 |
 
 ## 参考資料
 
 - [Amplify Gen2 - Custom Pipelines](https://docs.amplify.aws/react/deploy-and-host/fullstack-branching/custom-pipelines/)
 - [GitHub Actions OIDC](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
+- [Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter)
+- [Flet Documentation](https://flet.dev/docs/)
+- [dorny/paths-filter](https://github.com/dorny/paths-filter)

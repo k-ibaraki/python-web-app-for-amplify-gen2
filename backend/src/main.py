@@ -1,9 +1,14 @@
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.schemas import TodoCreate, TodoResponse
 
-app = FastAPI(title="Todo API")
+# API Gateway stage prefix (empty for local development)
+ROOT_PATH = os.getenv("API_ROOT_PATH", "")
+
+app = FastAPI(title="Todo API", root_path=ROOT_PATH)
 
 # CORS設定
 app.add_middleware(

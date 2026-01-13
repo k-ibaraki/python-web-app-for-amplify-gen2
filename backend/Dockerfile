@@ -18,5 +18,10 @@ COPY src/ ./src/
 # Lambda Web Adapter listens on port 8080 by default
 ENV PORT=8080
 
+# Lambda Web Adapter environment variables for proper CORS handling
+ENV AWS_LWA_INVOKE_MODE=response_stream
+ENV AWS_LWA_READINESS_CHECK_PATH=/health
+ENV AWS_LWA_READINESS_CHECK_PORT=8080
+
 # Start the server
 CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
