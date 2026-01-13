@@ -4,7 +4,7 @@ from api_client import ApiClient
 
 
 async def main(page: ft.Page):
-    page.title = "Todo App"
+    page.title = "Todo App for Amplify"
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 40
     page.bgcolor = "#1a1a2e"
