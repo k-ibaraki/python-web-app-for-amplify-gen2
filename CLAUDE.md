@@ -36,7 +36,9 @@ python-web-app-for-amplify-gen2/
 │   │   ├── main.py        # FastAPIアプリ（root_path設定）
 │   │   └── schemas.py     # データモデル（Pydantic）
 │   ├── scripts/           # 開発スクリプト
-│   ├── Dockerfile         # Lambda用（uv + FastAPI + Lambda Web Adapter）
+│   ├── Dockerfile         # Lambda用（マルチステージビルド + uv最適化）
+│   ├── .dockerignore      # Docker除外設定
+│   └── DOCKER.md          # Docker詳細ドキュメント
 │   └── pyproject.toml
 │
 ├── amplify/               # Amplify Gen2バックエンド定義（CDK）
