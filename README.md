@@ -1,7 +1,7 @@
 # Python Web App for Amplify Gen2
 
-Flet 1.0 Beta（フロントエンド）+ FastAPI（バックエンド）によるフルPython Webアプリケーション。
-AWS Amplify Gen2とGitHub Actionsによる完全なCI/CDパイプライン付き。
+Flet 1.0 Beta（フロントエンド）+ FastAPI（バックエンド）によるFull-stack Python Webアプリケーションのサンプルプロジェクトです。
+AWS Amplify Gen2とGitHub Actionsによる完全なCI/CDパイプライン付きです。
 
 ## 技術スタック
 
@@ -16,20 +16,20 @@ AWS Amplify Gen2とGitHub Actionsによる完全なCI/CDパイプライン付き
 
 ```
 .
-├── frontend/          # Flet CSRアプリ（独立プロジェクト）
+├── frontend/          # Flet CSRアプリ
 │   ├── src/
 │   │   ├── main.py          # メインアプリケーション
 │   │   ├── api_client.py    # API通信
 │   │   └── schemas.py       # データモデル
 │   └── scripts/       # 開発スクリプト
-├── backend/           # FastAPIサーバー（独立プロジェクト）
+├── backend/           # FastAPIサーバー
 │   ├── src/
 │   │   ├── main.py          # FastAPIアプリ
 │   │   └── schemas.py       # データモデル
 │   ├── scripts/       # 開発スクリプト
-│   └── Dockerfile     # Lambda用（マルチステージビルド + uv最適化）
+│   └── Dockerfile     # Lambda用Dockerイメージ
 ├── amplify/           # Amplify Gen2バックエンド定義（CDK）
-│   └── backend.ts     # Lambda + API Gateway
+│   └── backend.ts     # Lambda + API Gatewayの定義
 ├── .github/workflows/
 │   └── deploy.yml     # CI/CD（変更検出 + デプロイ）
 └── amplify.yml        # Amplifyビルド設定
@@ -64,10 +64,16 @@ cd frontend && uv run dev
 - Backend API Docs: http://localhost:8000/docs
 - Frontend: ブラウザが自動起動
 
-### 3. ローカルでAmplifyバックエンドをテスト
+### 3. Amplify Sandboxで開発用のバックエンド環境を構築
 
 ```bash
 npx ampx sandbox
+```
+
+### 4. Frontendを静的ファイルとしてビルド
+
+```bash
+cd frontend && uv run build
 ```
 
 ## 開発コマンド
@@ -95,6 +101,7 @@ uv run fix        # 自動修正 + フォーマット
 `main`ブランチへのpushで自動デプロイが実行されます。
 
 **変更検出による最適化:**
+
 - `frontend/**`のみ変更 → Backend: スキップ / Frontend: ビルド
 - `backend/**`変更 → Backend: デプロイ / Frontend: ビルド
 - その他変更 → 両方デプロイ
@@ -106,16 +113,19 @@ uv run fix        # 自動修正 + フォーマット
 ## アーキテクチャ
 
 ### バックエンド
+
 - **Docker Lambda**: FastAPI + Lambda Web Adapter（マルチステージビルド）
 - **API Gateway**: REST API（Proxy統合）
 - **最適化**: uvキャッシュマウントによる高速ビルド（87%短縮）
 
 ### フロントエンド
+
 - **Flet CSR**: Flutter Webベースの静的サイト
 - **Amplify Hosting**: グローバルCDN配信
 - **API統合**: ビルド時に`amplify_outputs.json`からAPI URL自動設定
 
 ### CI/CD
+
 - **責務分離**: Backend（GitHub Actions） / Frontend（Amplify）
 - **セキュリティ**: OIDC認証（IAMロール）
 
@@ -124,7 +134,3 @@ uv run fix        # 自動修正 + フォーマット
 - [デプロイガイド](./DEPLOY.md) - CI/CDセットアップの詳細手順
 - [開発ガイド](./CLAUDE.md) - プロジェクト構成と開発ガイドライン
 - [Docker最適化](./backend/DOCKER.md) - Dockerビルドの詳細
-
-## ライセンス
-
-MIT
