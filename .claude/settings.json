@@ -1,3 +1,3 @@
 {
-  "instructions": "# 必須指示\n\n## 品質チェック（必須）\n\nコード変更後、コミット前には必ず各ディレクトリで以下を実行：\n\n### backend/\n```bash\nuv run check  # lint + typecheck\nuv run fix    # 自動修正\n```\n\n### frontend/\n```bash\nuv run lint   # リントチェック\nuv run fix    # 自動修正\n```\n\n## プロジェクト設定\n\n詳細はルートの`CLAUDE.md`と`README.md`を参照してください。"
+  "instructions": "# 必須指示\n\n## 品質チェック（必須）\n\nコード変更後、コミット前には必ず各ディレクトリで以下を実行：\n\n### amplify/api/\n```bash\nuv run check  # lint + typecheck\nuv run fix    # 自動修正\n```\n\n### frontend/\n```bash\nuv run lint   # リントチェック\nuv run fix    # 自動修正\n```\n\n## プロジェクト設定\n\n詳細はルートの`CLAUDE.md`と`README.md`を参照してください。"
 }

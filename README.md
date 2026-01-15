@@ -22,14 +22,14 @@ AWS Amplify Gen2とGitHub Actionsによる完全なCI/CDパイプライン付き
 │   │   ├── api_client.py    # API通信
 │   │   └── schemas.py       # データモデル
 │   └── scripts/       # 開発スクリプト
-├── backend/           # FastAPIサーバー
-│   ├── src/
-│   │   ├── main.py          # FastAPIアプリ
-│   │   └── schemas.py       # データモデル
-│   ├── scripts/       # 開発スクリプト
-│   └── Dockerfile     # Lambda用Dockerイメージ
 ├── amplify/           # Amplify Gen2バックエンド定義（CDK）
-│   └── backend.ts     # Lambda + API Gatewayの定義
+│   ├── backend.ts     # Lambda + API Gatewayの定義
+│   └── api/           # FastAPIサーバー
+│       ├── src/
+│       │   ├── main.py      # FastAPIアプリ
+│       │   └── schemas.py   # データモデル
+│       ├── scripts/   # 開発スクリプト
+│       └── Dockerfile # Lambda用Dockerイメージ
 ├── .github/workflows/
 │   └── deploy.yml     # CI/CD（変更検出 + デプロイ）
 └── amplify.yml        # Amplifyビルド設定
@@ -44,7 +44,7 @@ AWS Amplify Gen2とGitHub Actionsによる完全なCI/CDパイプライン付き
 npm ci
 
 # バックエンド
-cd backend && uv sync
+cd amplify/api && uv sync
 
 # フロントエンド
 cd frontend && uv sync
@@ -54,7 +54,7 @@ cd frontend && uv sync
 
 ```bash
 # ターミナル1: バックエンド起動
-cd backend && uv run dev
+cd amplify/api && uv run dev
 
 # ターミナル2: フロントエンド起動
 cd frontend && uv run dev
@@ -78,7 +78,7 @@ cd frontend && uv run build
 
 ## 開発コマンド
 
-### Backend（`backend/`ディレクトリで実行）
+### Backend（`amplify/api/`ディレクトリで実行）
 
 ```bash
 uv run dev        # 開発サーバー起動（port 8000）
@@ -103,7 +103,7 @@ uv run fix        # 自動修正 + フォーマット
 **変更検出による最適化:**
 
 - `frontend/**`のみ変更 → Backend: スキップ / Frontend: ビルド
-- `backend/**`変更 → Backend: デプロイ / Frontend: ビルド
+- `amplify/api/**`変更 → Backend: デプロイ / Frontend: ビルド
 - その他変更 → 両方デプロイ
 
 ### セットアップ
@@ -133,4 +133,4 @@ uv run fix        # 自動修正 + フォーマット
 
 - [デプロイガイド](./DEPLOY.md) - CI/CDセットアップの詳細手順
 - [開発ガイド](./CLAUDE.md) - プロジェクト構成と開発ガイドライン
-- [Docker最適化](./backend/DOCKER.md) - Dockerビルドの詳細
+- [Docker最適化](./amplify/api/DOCKER.md) - Dockerビルドの詳細

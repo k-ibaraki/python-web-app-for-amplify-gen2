@@ -16,7 +16,7 @@ const apiStack = backend.createStack("ApiStack");
 
 // FastAPI backend as Docker Lambda (x86_64 for GitHub Actions compatibility)
 const apiFunction = new lambda.DockerImageFunction(apiStack, "ApiFunction", {
-  code: lambda.DockerImageCode.fromImageAsset(join(__dirname, "../backend"), {
+  code: lambda.DockerImageCode.fromImageAsset(join(__dirname, "api"), {
     platform: Platform.LINUX_AMD64,
   }),
   memorySize: 512,

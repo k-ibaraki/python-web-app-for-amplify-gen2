@@ -29,8 +29,8 @@ jobs:
         with:
           filters: |
             backend:
-              - 'backend/**'
-              - 'amplify/**'
+              - 'amplify/api/**'
+              - 'amplify/backend.ts'
               - 'package.json'
               - 'package-lock.json'
             frontend:

@@ -17,7 +17,7 @@ Amplify Gen2 + GitHub Actions によるCI/CD（継続的インテグレーショ
 │  ┌──────────────────────────────────────────┐  │
 │  │  1. Check Changes (paths-filter)         │  │
 │  │     - frontend/** → frontend-only flag   │  │
-│  │     - backend/** → backend-changed flag  │  │
+│  │     - amplify/api/** → backend-changed flag  │  │
 │  └──────────────────────────────────────────┘  │
 │                    │                            │
 │       ┌────────────┴────────────┐               │
@@ -68,7 +68,7 @@ Amplify Gen2 + GitHub Actions によるCI/CD（継続的インテグレーショ
 | 変更内容 | Backend Deploy | Frontend Build |
 |---------|----------------|----------------|
 | `frontend/**`のみ | ⏭️ スキップ | ✅ 実行 |
-| `backend/**` | ✅ 実行 | ✅ 実行 |
+| `amplify/api/**` | ✅ 実行 | ✅ 実行 |
 | 両方変更 | ✅ 実行 | ✅ 実行 |
 | その他のファイル | ✅ 実行 | ✅ 実行 |
 | 手動実行 | ✅ 実行 | ✅ 実行 |
@@ -348,7 +348,7 @@ https://main.<AMPLIFY_APP_ID>.amplifyapp.com
 **原因**: FastAPIの`root_path`がAPI Gatewayのステージプレフィックス`/prod`に対応していない
 
 **解決策**: 
-- `backend/src/main.py`で環境変数`API_ROOT_PATH`を使用
+- `amplify/api/src/main.py`で環境変数`API_ROOT_PATH`を使用
 - `amplify/backend.ts`のLambda環境変数で`API_ROOT_PATH: "/prod"`を設定
 
 ### 2. CORSエラー

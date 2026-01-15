@@ -31,21 +31,20 @@ python-web-app-for-amplify-gen2/
 │   ├── pyproject.toml
 │   └── dist/              # ビルド出力（静的ファイル）
 │
-├── backend/               # FastAPIサーバー（独立プロジェクト）
-│   ├── src/
-│   │   ├── main.py        # FastAPIアプリ（root_path設定）
-│   │   └── schemas.py     # データモデル（Pydantic）
-│   ├── scripts/           # 開発スクリプト
-│   ├── Dockerfile         # Lambda用（マルチステージビルド + uv最適化）
-│   ├── .dockerignore      # Docker除外設定
-│   └── DOCKER.md          # Docker詳細ドキュメント
-│   └── pyproject.toml
-│
 ├── amplify/               # Amplify Gen2バックエンド定義（CDK）
-│   └── backend.ts         # Lambda + API Gateway + 環境変数設定
+│   ├── backend.ts         # Lambda + API Gateway + 環境変数設定
+│   └── api/               # FastAPIサーバー（独立プロジェクト）
+│       ├── src/
+│       │   ├── main.py    # FastAPIアプリ（root_path設定）
+│       │   └── schemas.py # データモデル（Pydantic）
+│       ├── scripts/       # 開発スクリプト
+│       ├── Dockerfile     # Lambda用（マルチステージビルド + uv最適化）
+│       ├── .dockerignore  # Docker除外設定
+│       ├── DOCKER.md      # Docker詳細ドキュメント
+│       └── pyproject.toml
 │
 ├── .github/workflows/
-│   └── deploy.yml         # CI/CD（変更検出 + バックエンドデプロイ + Webhookトリガー）
+│   └── deploy.yml         # CI/CD（変更検出 + デプロイ）
 │
 ├── amplify.yml            # Amplifyビルド設定（Flutter SDK + Flet build）
 └── amplify_outputs.json   # デプロイ後に生成（API URL含む）
@@ -59,7 +58,7 @@ python-web-app-for-amplify-gen2/
 
 ## Development Commands
 
-### Backend（`backend/`ディレクトリで実行）
+### Backend（`amplify/api/`ディレクトリで実行）
 
 ```bash
 uv sync           # 依存関係インストール
@@ -96,7 +95,7 @@ npx ampx sandbox  # ローカルでAmplifyバックエンドをデプロイ（�
 
 ```bash
 # Backend（lint + typecheck + 自動修正）
-cd backend && uv run check && uv run fix
+cd amplify/api && uv run check && uv run fix
 
 # Frontend（lint + 自動修正）
 cd frontend && uv run fix
@@ -115,7 +114,7 @@ cd frontend && uv run fix
 
 ```yaml
 frontend/** のみ変更  → Backend: ⏭️ スキップ  Frontend: ✅ ビルド
-backend/** 変更      → Backend: ✅ デプロイ  Frontend: ✅ ビルド
+amplify/api/** 変更  → Backend: ✅ デプロイ  Frontend: ✅ ビルド
 両方変更             → Backend: ✅ デプロイ  Frontend: ✅ ビルド
 その他のファイル変更  → Backend: ✅ デプロイ  Frontend: ✅ ビルド
 ```
@@ -135,7 +134,7 @@ backend/** 変更      → Backend: ✅ デプロイ  Frontend: ✅ ビルド
 
 ### 重要な設定
 
-#### Backend（`backend/src/main.py`）
+#### Backend（`amplify/api/src/main.py`）
 ```python
 # API Gatewayステージプレフィックス対応
 ROOT_PATH = os.getenv("API_ROOT_PATH", "")
