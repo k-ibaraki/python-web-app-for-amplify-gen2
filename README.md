@@ -132,5 +132,3 @@ uv run fix        # 自動修正 + フォーマット
 ## ドキュメント
 
 - [デプロイガイド](./DEPLOY.md) - CI/CDセットアップの詳細手順
-- [開発ガイド](./CLAUDE.md) - プロジェクト構成と開発ガイドライン
-- [Docker最適化](./amplify/api/DOCKER.md) - Dockerビルドの詳細
